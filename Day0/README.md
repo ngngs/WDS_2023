@@ -29,7 +29,7 @@ git add <파일이름>
 git commit -m "test 커밋"
 <br><br>
 7 원격 저장소로 보내기<br>
-git push
+git push origin [원하는 branch명]
 <br><br>
 8 Pull Requests 보내기<br>
 Base : main <- Compare : 본인 브랜치
