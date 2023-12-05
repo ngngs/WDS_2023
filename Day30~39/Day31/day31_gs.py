@@ -1,46 +1,54 @@
-# 어떤 코드가 좋아보일까?
-# 좋은 코드로 풀기
+# 보기 좋은 코드 이어서
 
-# 1. 정확도 : 예상 가능하게 입력된 결과가 나와야한다
-# 2. 효율성 : 시간과 공간 두 가지 측면에서 모두 효율이 좋아야한다(한 가지 간과하는 점이 있는데, 실생활에선 상수 인자가 굉장히 중요하다)
-# 3. 간략화 : 코드 100줄 짜리를 10줄로 작성할 수 있다
-# 4. 가독성 : 다른 개발자도 나의 코드를 읽을 수 있어야한다. 필요한 곳에는 주석이 있어야한다.
-# 5. 관리 가능성 : 다른 개발자도 내 코드를 관리할 수 있는 코드여야한다.
+# 문제
+# n명의 권투선수가 권투 대회에 참여했고 각각 1번부터 n번까지 번호를 받았습니다. 권투 경기는 1대1 방식으로 진행이 되고, 만약 A 선수가 B 선수보다 실력이 좋다면 A 선수는 B 선수를 항상 이깁니다. 심판은 주어진 경기 결과를 가지고 선수들의 순위를 매기려 합니다. 하지만 몇몇 경기 결과를 분실하여 정확하게 순위를 매길 수 없습니다.
 
-########## 문제 ################
-# n명이 입국심사를 위해 줄을 서서 기다리고 있습니다. 각 입국심사대에 있는 심사관마다 심사하는데 걸리는 시간은 다릅니다.
-
-# 처음에 모든 심사대는 비어있습니다. 한 심사대에서는 동시에 한 명만 심사를 할 수 있습니다. 가장 앞에 서 있는 사람은 비어 있는 심사대로 가서 심사를 받을 수 있습니다. 하지만 더 빨리 끝나는 심사대가 있으면 기다렸다가 그곳으로 가서 심사를 받을 수도 있습니다.
-
-# 모든 사람이 심사를 받는데 걸리는 시간을 최소로 하고 싶습니다.
-
-# 입국심사를 기다리는 사람 수 n, 각 심사관이 한 명을 심사하는데 걸리는 시간이 담긴 배열 times가 매개변수로 주어질 때, 모든 사람이 심사를 받는데 걸리는 시간의 최솟값을 return 하도록 solution 함수를 작성해주세요.
+# 선수의 수 n, 경기 결과를 담은 2차원 배열 results가 매개변수로 주어질 때 정확하게 순위를 매길 수 있는 선수의 수를 return 하도록 solution 함수를 작성해주세요.
 
 # 제한사항
-# 입국심사를 기다리는 사람은 1명 이상 1,000,000,000명 이하입니다.
-# 각 심사관이 한 명을 심사하는데 걸리는 시간은 1분 이상 1,000,000,000분 이하입니다.
-# 심사관은 1명 이상 100,000명 이하입니다.
+# 선수의 수는 1명 이상 100명 이하입니다.
+# 경기 결과는 1개 이상 4,500개 이하입니다.
+# results 배열 각 행 [A, B]는 A 선수가 B 선수를 이겼다는 의미입니다.
+# 모든 경기 결과에는 모순이 없습니다.
 
-# 주의사항 : 최대한 보기 좋은 코드를 작성하자
-def solution(n, times):
+from collections import deque
+def solution(n, results):
     
-    # start = 0, end = 가장 오래걸리는 사람앞에 n명이 서있는 경우
-    start = 0
-    end = max(times) * n
-    ans = end + 1
+    # 일방향 그래프를 만들어서 순위 체크
     
-    # 이분탐색
-    while start <= end :
-        mid = (start + end) // 2
-        judge = sum([mid // x for x in times])
+    win_graph = [[] for _ in range(n+1)]
+    lose_graph = [[] for _ in range(n+1)]
+    for winner, loser in results :
+        win_graph[winner].append(loser)
+        lose_graph[loser].append(winner)
+
+    ans = 0
         
-        # 각 심사대 별로 시간을 나누고 합해서 그 값이 n보다 크다면 end를 내리고, 
-        if judge >= n :
-            end = mid - 1
-            ans = min(ans, mid)
-        # n보다 작으면 start를 올린다
-        else :
-            start = mid + 1
-            
+    # 이긴 사람 먼저, 진 사람 순회
+    for i in range(1,n+1) :
+        visited = [0] *(n+1)
+        q = deque([i])
+        # 내가 이긴 사람이 있다면
+        while q :
+            _win = q.popleft()
+            for _lose in win_graph[_win] :
+                if not visited[_lose] :
+                    visited[_lose] = 1
+                    q.append(_lose)
+
+        dq = deque([i])
+        # 내가 진 사람이 있다면
+        while dq :
+            _lose = dq.popleft()
+            for _win in lose_graph[_lose] :
+                if not visited[_win] :
+                    visited[_win] = 1
+                    dq.append(_win)
+        
+
+        # 다 돌고 cnt가 n-1이면 ans +1
+        if visited.count(1) == n-1 :
+            ans += 1
+    
 
     return ans
