@@ -20,7 +20,7 @@ public class day34_gs {
         return answer;
     }
 
-    // 배열[i:j] 까지 자르기
+    // 배열[i:j] 까지
     public int[] solution(int[] numbers, int num1, int num2) {
         int[] answer = Arrays.copyOfRange(numbers, num1, num2+1);
         return answer;
